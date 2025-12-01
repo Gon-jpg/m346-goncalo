@@ -1,0 +1,19 @@
+#cloud-config
+# Cloud-Init Beispiel-Datei für Teil A
+
+users:
+  - name: ubuntu                    # Benutzername
+    groups: [users, admin]          # Gruppenmitgliedschaft
+    shell: /bin/bash                # Standard-Shell
+    sudo: ALL=(ALL) NOPASSWD:ALL    # Sudo-Rechte ohne Passwort
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0WGP1EZykEtv5YGC9nMiPFW3U3DmZNzKFO5nEu6uozEHh4jLZzPNHSrfFTuQ2GnRDSt+XbOtTLdcj26+iPNiFoFha42aCIzYjt6V8Z+SQ9pzF4jPPzxwXfDdkEWylgoNnZ+4MG1lNFqa8aO7F62tX0Yj5khjC0Bs7Mb2cHLx1XZaxJV6qSaulDuBbLYe8QUZXkMc7wmob3PM0kflfolR3LE7LResIHWa4j4FL6r5cQmFlDU2BDPpKMFMGUfRSFiUtaWBNXFOWHQBC2+uKmuMPYP4vJC9sBgqMvPN/X2KyemqdMvdKXnCfrzadHuSSJYEzD64Cve5Zl9yVvY4AqyBD aws-key
+
+ssh_pwauth: false                  # Deaktiviert Passwort-Login über SSH
+disable_root: false                 # Root-Benutzer bleibt aktiv
+
+package_update: true                # Führt apt update aus
+
+packages:                           # Zu installierende Pakete
+  - curl                            # HTTP-Request Tool
+  - wget                            # Download Tool
