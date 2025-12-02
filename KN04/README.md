@@ -119,7 +119,7 @@ ssh -i C:\Users\iamth\Downloads\vorname1.pem ubuntu@44.220.247.21
 
 **Ergebnis:** ✅ **ERFOLGREICH**
 
-![SSH mit vorname1](./screenshots/b-ssh-vorname1-success.png)
+![SSH mit vorname1](./screenshots/vorname1-pem.png)
 
 Der Login funktioniert, da der Public Key von vorname1 in der Cloud-init Konfiguration hinterlegt ist.
 
@@ -137,7 +137,7 @@ ssh -i C:\Users\iamth\Downloads\vorname2.pem ubuntu@44.220.247.21
 ubuntu@44.220.247.21: Permission denied (publickey).
 ```
 
-![SSH mit vorname2](./screenshots/b-ssh-vorname2-denied.png)
+![SSH mit vorname2](./screenshots/vorname2-pem.png)
 
 ---
 
@@ -157,30 +157,13 @@ ubuntu@44.220.247.21: Permission denied (publickey).
 
 ### Screenshots Teil B
 
+#### Instanz Summary KN04-B
+![Instance Summary](./screenshots/instance-summary-kn04b.png)
+
 #### Instanz Details KN04-B
-![Instance Details](./screenshots/b-instance-details.png)
+![Instance Details](./screenshots/details-kn04b.png)
 
 Zeigt "Key pair assigned at launch: **vorname2**" - aber durch Cloud-init wird nur vorname1 autorisiert.
-
----
-
-### Cloud-Init Log
-
-#### Cloud-Init Output Log
-![Cloud-Init Log](./screenshots/b-cloud-init-log.png)
-
-Der Cloud-Init Log zeigt:
-- Cloud-init Version 25.2
-- Netzwerk-Konfiguration (Private IP: 172.31.67.31)
-- SSH-Key Generierung
-- Erfolgreiche Ausführung der Cloud-Init Konfiguration
-
-**Befehl:**
-```bash
-sudo cat /var/log/cloud-init-output.log | head -50
-```
-
-Dieser Log ist sehr nützlich für Debugging, falls die Cloud-Init Konfiguration fehlschlägt.
 
 ---
 
@@ -300,13 +283,13 @@ runcmd:
 #### Screenshots DB-Server
 
 ##### Instanz Summary
-![DB Instance Summary](./screenshots/d-db-instance-summary.png)
+![DB Instance Summary](./screenshots/instance-summary-kn04-db.png)
 
 ##### Instanz Details
-![DB Instance Details](./screenshots/d-db-instance-details.png)
+![DB Instance Details](./screenshots/details-kn04-db.png)
 
 ##### bind-address Verifikation
-![bind-address](./screenshots/d-db-bind-address.png)
+![bind-address](./screenshots/bind-address.png)
 
 Zeigt `bind-address = 0.0.0.0` nach der Änderung durch Cloud-init.
 
@@ -408,17 +391,17 @@ runcmd:
 #### Screenshots Web-Server
 
 ##### Instanz Summary
-![Web Instance Summary](./screenshots/d-web-instance-summary.png)
+![Web Instance Summary](./screenshots/instance-summary-kn04-web.png)
 
 ##### Instanz Details
-![Web Instance Details](./screenshots/d-web-instance-details.png)
+![Web Instance Details](./screenshots/details-kn04-web.png)
 
 ---
 
 ### 3. Webseiten Tests
 
 #### index.html - Apache Default Page
-![index.html](./screenshots/d-web-index.png)
+![index.html](./screenshots/apache-web.png)
 
 URL: `http://3.235.41.82/index.html`
 
@@ -427,7 +410,7 @@ Zeigt "It works!" - Apache läuft erfolgreich.
 ---
 
 #### info.php - PHP Info
-![info.php](./screenshots/d-web-info.png)
+![info.php](./screenshots/info-php.png)
 
 URL: `http://3.235.41.82/info.php`
 
@@ -436,7 +419,7 @@ Zeigt PHP Version 8.3.6 und alle geladenen Module.
 ---
 
 #### db.php - Datenbankverbindung
-![db.php](./screenshots/d-web-db.png)
+![db.php](./screenshots/db-php.png)
 
 URL: `http://3.235.41.82/db.php`
 
@@ -450,7 +433,7 @@ Dies beweist, dass der Web-Server erfolgreich mit dem DB-Server kommuniziert.
 ---
 
 #### Adminer - Login
-![Adminer Login](./screenshots/d-web-adminer-login.png)
+![Adminer Login](./screenshots/adminer-login.png)
 
 URL: `http://3.235.41.82/adminer/`
 
@@ -464,7 +447,7 @@ Zeigt Adminer Login-Screen.
 ---
 
 #### Adminer - Eingeloggt
-![Adminer Logged In](./screenshots/d-web-adminer-logged.png)
+![Adminer Logged In](./screenshots/adminer-login-success.png)
 
 Nach erfolgreichem Login zeigt Adminer die Datenbankstruktur und erlaubt Verwaltung der MariaDB-Instanz auf KN04-DB.
 

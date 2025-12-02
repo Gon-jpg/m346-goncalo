@@ -1,0 +1,72 @@
+#cloud-config
+# KN05 Webserver
+# Private IP: 172.31.48.20
+# Elastic IP: 3.90.117.3
+# Security Group: SG-Webserver (Port 22, 80)
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    shell: /bin/bash
+    ssh_authorized_keys:
+      # Student Key
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEt1OjtorQ8NSEJp/u1XCESB3+sayt9CqEZmrFwjM2wRvtN9xY9knpySmKnbshpeGto15h5kVDc1fkqxIG7GUqP27V441bql+YOmiD/yQjwhXt23d6H9CqWEm+LrDx0J54A0EHaKs4gAG1g2cq4/f8u7+MJMI6lLjdeGdB9q31MsxhH4dLaCo1N+QLeQSdrAmDQNwYOMhSNSMRRv+iZpKPCl4xx1CAnA0YqOWHUpYhN+O9JjJJRqEJm0Wsb3J3rmFAvHeGE4CAUq+wd+w3rnzp5ZwZwGNWQDVqzIA0J6uexHF9TnBmeWnt8zl74PL3SP/LAMtw4KE0v56batcI49DP aws-key
+      # Teacher Key
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0WGP1EZykEtv5YGC9nMiPFW3U3DmZNzKFO5nEu6uozEHh4jLZzPNHSrfFTuQ2GnRDSt+XbOtTLdcj26+iPNiFoFha42aCIzYjt6V8Z+SQ9pzF4jPPzxwXfDdkEWylgoNnZ+4MG1lNFqa8aO7F62tX0Yj5khjC0Bs7Mb2cHLx1XZaxJV6qSaulDuBbLYe8QUZXkMc7wmob3PM0kflfolR3LE7LResIHWa4j4FL6r5cQmFlDU2BDPpKMFMGUfRSFiUtaWBNXFOWHQBC2+uKmuMPYP4vJC9sBgqMvPN/X2KyemqdMvdKXnCfrzadHuSSJYEzD64Cve5Zl9yVvY4AqyBD teacher-key
+
+ssh_pwauth: false
+disable_root: false
+
+package_update: true
+packages:
+  - apache2
+  - php
+  - libapache2-mod-php
+  - php-mysql
+  - adminer
+
+write_files:
+  # PHP Info Seite
+  - path: /var/www/html/info.php
+    content: |
+      <?php
+      phpinfo();
+      ?>
+
+  # Datenbank-Test Seite - Verbindet sich zur DB auf Private IP 172.31.48.10
+  - path: /var/www/html/db.php
+    content: |
+      <?php
+      $servername = "172.31.48.10";  // Private IP von KN05-DB
+      $username = "admin";
+      $password = "admin";
+      $dbname = "mysql";
+
+      $conn = new mysqli($servername, $username, $password, $dbname);
+
+      if ($conn->connect_error) {
+          die("Connection failed: " . $conn->connect_error);
+      }
+
+      echo "<h1>Database Connection Successful!</h1>";
+      echo "<p>Connected to database on " . $servername . "</p>";
+
+      $sql = "SELECT User, Host FROM mysql.user";
+      $result = $conn->query($sql);
+
+      if ($result->num_rows > 0) {
+          echo "<table border='1'><tr><th>User</th><th>Host</th></tr>";
+          while($row = $result->fetch_assoc()) {
+              echo "<tr><td>" . $row["User"]. "</td><td>" . $row["Host"]. "</td></tr>";
+          }
+          echo "</table>";
+      }
+      $conn->close();
+      ?>
+
+runcmd:
+  # Aktiviere Adminer Konfiguration
+  - sudo a2enconf adminer
+  # Starte Apache neu
+  - sudo systemctl restart apache2

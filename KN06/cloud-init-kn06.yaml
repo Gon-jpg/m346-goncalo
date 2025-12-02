@@ -1,0 +1,110 @@
+#cloud-config
+# KN06 - Java Web Application mit MongoDB Atlas und Nginx Reverse Proxy
+# WICHTIG: Platzhalter müssen vor der Verwendung ersetzt werden!
+# [[MONGO_USER]] → admin
+# [[MONGO_PWD]] → admin123
+# [[MONGO_URL]] → m346-cluster.wk57b1t.mongodb.net
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    shell: /bin/bash
+    ssh_authorized_keys:
+      # Student Key
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEt1OjtorQ8NSEJp/u1XCESB3+sayt9CqEZmrFwjM2wRvtN9xY9knpySmKnbshpeGto15h5kVDc1fkqxIG7GUqP27V441bql+YOmiD/yQjwhXt23d6H9CqWEm+LrDx0J54A0EHaKs4gAG1g2cq4/f8u7+MJMI6lLjdeGdB9q31MsxhH4dLaCo1N+QLeQSdrAmDQNwYOMhSNSMRRv+iZpKPCl4xx1CAnA0YqOWHUpYhN+O9JjJJRqEJm0Wsb3J3rmFAvHeGE4CAUq+wd+w3rnzp5ZwZwGNWQDVqzIA0J6uexHF9TnBmeWnt8zl74PL3SP/LAMtw4KE0v56batcI49DP aws-key
+      # Teacher Key
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0WGP1EZykEtv5YGC9nMiPFW3U3DmZNzKFO5nEu6uozEHh4jLZzPNHSrfFTuQ2GnRDSt+XbOtTLdcj26+iPNiFoFha42aCIzYjt6V8Z+SQ9pzF4jPPzxwXfDdkEWylgoNnZ+4MG1lNFqa8aO7F62tX0Yj5khjC0Bs7Mb2cHLx1XZaxJV6qSaulDuBbLYe8QUZXkMc7wmob3PM0kflfolR3LE7LResIHWa4j4FL6r5cQmFlDU2BDPpKMFMGUfRSFiUtaWBNXFOWHQBC2+uKmuMPYP4vJC9sBgqMvPN/X2KyemqdMvdKXnCfrzadHuSSJYEzD64Cve5Zl9yVvY4AqyBD teacher-key
+
+# WARNUNG: In Produktion NICHT verwenden! Sicherheitsrisiko!
+ssh_pwauth: true
+
+disable_root: false
+
+package_update: true
+packages:
+  - nginx
+  - openjdk-17-jdk-headless
+  - wget
+  - curl
+
+write_files:
+  # Nginx Reverse Proxy Konfiguration
+  - path: /etc/nginx/sites-available/shop-app
+    content: |
+      server {
+          listen 80;
+          server_name _;
+
+          location / {
+              proxy_pass http://localhost:5001;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+          }
+      }
+
+  # Systemd Service für die Java Application
+  - path: /etc/systemd/system/shop-app.service
+    content: |
+      [Unit]
+      Description=Shop Application (Java Spring Boot)
+      After=network.target
+
+      [Service]
+      Type=simple
+      User=ubuntu
+      WorkingDirectory=/home/ubuntu/shop-app
+      Environment="MONGO_CONNECTION_STRING=mongodb+srv://admin:admin123@m346-cluster.wk57b1t.mongodb.net/shop?retryWrites=true&w=majority"
+      Environment="SERVER_PORT=5001"
+      ExecStart=/usr/bin/java -jar /home/ubuntu/shop-app/shop-app.jar
+      Restart=on-failure
+      RestartSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # Application Properties (falls die App eine application.properties braucht)
+  - path: /home/ubuntu/shop-app/application.properties
+    content: |
+      server.port=5001
+      spring.data.mongodb.uri=mongodb+srv://admin:admin123@m346-cluster.wk57b1t.mongodb.net/shop?retryWrites=true&w=majority
+      spring.data.mongodb.database=shop
+    owner: ubuntu:ubuntu
+    permissions: '0644'
+
+runcmd:
+  # Verzeichnis für die Applikation erstellen
+  - mkdir -p /home/ubuntu/shop-app
+  - chown ubuntu:ubuntu /home/ubuntu/shop-app
+
+  # Java Application herunterladen (PLATZHALTER - muss durch echte URL ersetzt werden)
+  # Beispiel: wget -O /home/ubuntu/shop-app/shop-app.jar https://github.com/tbz-it/m346-ref-card-01/releases/download/v1.0.0/shop-app.jar
+  - wget -O /home/ubuntu/shop-app/shop-app.jar https://github.com/tbz-it/m346-ref-card-01/releases/download/v1.0.0/shop-app.jar || echo "WARNUNG: Shop App konnte nicht heruntergeladen werden. Bitte URL anpassen!"
+  - chown ubuntu:ubuntu /home/ubuntu/shop-app/shop-app.jar
+
+  # Nginx Konfiguration aktivieren
+  - rm -f /etc/nginx/sites-enabled/default
+  - ln -s /etc/nginx/sites-available/shop-app /etc/nginx/sites-enabled/shop-app
+  - nginx -t
+  - systemctl restart nginx
+  - systemctl enable nginx
+
+  # Java Application als Service starten
+  - systemctl daemon-reload
+  - systemctl enable shop-app.service
+  - systemctl start shop-app.service
+
+  # Status überprüfen (wird ins cloud-init Log geschrieben)
+  - sleep 10
+  - systemctl status shop-app.service --no-pager
+  - systemctl status nginx --no-pager
+
+# HINWEISE für die Verwendung:
+# 1. Die JAR-File URL muss angepasst werden (siehe wget Befehl)
+# 2. MongoDB Connection String enthält Credentials im Klartext (NICHT für Produktion!)
+# 3. ssh_pwauth: true ist ein Sicherheitsrisiko (siehe Dokumentation Teil A)
+# 4. Health Check Endpoint für Load Balancer: http://<IP>/shop/alive
+# 5. Swagger UI: http://<IP>/swagger-ui.html
+# 6. Cloud-Init Log: /var/log/cloud-init-output.log
