@@ -131,11 +131,23 @@ Die Firma betreibt eine eigene CRM-Software On-Premise mit folgender Spezifikati
 
 **Alternative**: Standard-2 ($200/Monat) mit 256 GB Storage falls mehr Platz benötigt.
 
+### Backup
+
+| Parameter | Wert | Begründung |
+|-----------|------|------------|
+| Service | **Inkludiert** | Standard-Pläne haben automatische Backups |
+| Häufigkeit | Täglich | Automatisch durch Heroku |
+| Retention | 7 Tage | Standard bei Standard-Plänen |
+| Kosten | **$0** | Im Postgres-Plan enthalten |
+
+**Wichtig**: Bei Heroku Postgres Standard-Plänen sind Backups bereits inkludiert - im Gegensatz zu AWS/Azure, wo Backup-Storage separat bezahlt werden muss.
+
 ### Heroku Gesamtkosten
 | Komponente | Monatliche Kosten |
 |------------|-------------------|
 | Web Dyno (Standard-2X) | $50 |
 | Postgres (Standard-0) | $50 |
+| Backup | $0 (inkludiert) |
 | **TOTAL Heroku** | **$100/Monat** |
 
 ### Erklärung der Abweichungen (PAAS)
@@ -146,7 +158,9 @@ Die Firma betreibt eine eigene CRM-Software On-Premise mit folgender Spezifikati
 
 3. **Kein separates OS-Management**: Ubuntu-Administration entfällt komplett.
 
-4. **Backup inkludiert**: Standard-Pläne haben automatische tägliche Backups.
+4. **Backup inkludiert**: Im Gegensatz zu IAAS (AWS/Azure) sind bei Heroku Postgres Standard-Plänen automatische tägliche Backups bereits im Preis enthalten. Kein separater Backup-Storage nötig.
+
+5. **Höhere Kosten, weniger Aufwand**: PAAS kostet mehr als IAAS ($100 vs. $46-64), aber eliminiert Server-Administration.
 
 ---
 
