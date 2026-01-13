@@ -1,0 +1,6 @@
+#cloud-config
+packages:
+  - mariadb-server
+runcmd:
+  - sudo systemctl start mariadb
+  - sudo systemctl enable mariadb
