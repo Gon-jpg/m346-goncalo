@@ -4,7 +4,7 @@ provider "aws" {
 
 # Security Group für MariaDB
 resource "aws_security_group" "db_sg" {
-  name        = "kn09-db-sg"
+  name        = "kn09-db-sg-v2"
   description = "Security Group for MariaDB"
 
   ingress {
@@ -40,13 +40,7 @@ resource "aws_instance" "db_server" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.db_sg.id]
 
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y mariadb105-server
-              systemctl start mariadb
-              systemctl enable mariadb
-              EOF
+  user_data = file(pathexpand("~/db-init.yaml"))
 
   tags = {
     Name = "KN09-Terraform-DB"

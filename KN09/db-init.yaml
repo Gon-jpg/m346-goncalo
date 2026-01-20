@@ -1,6 +1,10 @@
 #cloud-config
 packages:
-  - mariadb-server
+  - mariadb105-server
+
 runcmd:
-  - sudo systemctl start mariadb
-  - sudo systemctl enable mariadb
+  - systemctl start mariadb
+  - systemctl enable mariadb
+  - echo "[mysqld]" >> /etc/my.cnf
+  - echo "bind-address = 0.0.0.0" >> /etc/my.cnf
+  - systemctl restart mariadb
